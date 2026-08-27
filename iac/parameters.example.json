@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": {
+      "value": "sql-adventure-dev-unique"
+    },
+    "sqlAdminLogin": {
+      "value": "azureadmin"
+    },
+    "sqlAdminPassword": {
+      "value": "P@ssw0rdSecure2026!"
+    },
+    "storageAccountDataName": {
+      "value": "stadventuredataunique"
+    },
+    "storageAccountSynapseName": {
+      "value": "stadventuresynapseunique"
+    },
+    "synapseWorkspaceName": {
+      "value": "syn-adventure-dev-unique"
+    }
+  }
+}

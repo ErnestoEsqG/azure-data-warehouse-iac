@@ -1,0 +1,21 @@
+# Secretos y credenciales locales
+iac/parameters.local.json
+*.env
+*.pem
+
+# Archivos pesados / Backups locales
+data/*.bacpac
+data/*.bak
+*.bacpac
+
+# Power BI temporales y caché
+*.tmp
+*.pbix
+bi/**/.pbi/localSettings.json
+bi/**/.pbi/cache.abf
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
