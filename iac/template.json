@@ -1,0 +1,135 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": { "type": "string" },
+    "sqlAdminLogin": { "type": "string", "defaultValue": "azureadmin" },
+    "sqlAdminPassword": { "type": "secureString" },
+    "storageAccountDataName": { "type": "string" },
+    "storageAccountSynapseName": { "type": "string" },
+    "synapseWorkspaceName": { "type": "string" },
+    "bacpacStorageAccountName": { "type": "string" },
+    "bacpacContainerName": { "type": "string", "defaultValue": "bacpac-store" },
+    "bacpacFileName": { "type": "string", "defaultValue": "AdventureWorksLT.bacpac" },
+    "location": { "type": "string", "defaultValue": "[resourceGroup().location]" }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-11-01",
+      "name": "[parameters('sqlServerName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdminLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdminPassword')]",
+        "version": "12.0",
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('sqlServerName'), '/AllowAllAzure')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+      ],
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('sqlServerName'), '/AdventureWorksLT')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+      ],
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard",
+        "capacity": 10
+      },
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": 268435456000
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases/extensions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('sqlServerName'), '/AdventureWorksLT/import')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('sqlServerName'), 'AdventureWorksLT')]"
+      ],
+      "properties": {
+        "operationMode": "Import",
+        "storageKeyType": "StorageAccessKey",
+        "storageKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('bacpacStorageAccountName')), '2023-01-01').keys[0].value]",
+        "storageUri": "[concat('https://', parameters('bacpacStorageAccountName'), '.blob.core.windows.net/', parameters('bacpacContainerName'), '/', parameters('bacpacFileName'))]",
+        "administratorLogin": "[parameters('sqlAdminLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdminPassword')]"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('storageAccountDataName')]",
+      "location": "[parameters('location')]",
+      "sku": { "name": "Standard_LRS" },
+      "kind": "StorageV2"
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('storageAccountSynapseName')]",
+      "location": "[parameters('location')]",
+      "sku": { "name": "Standard_LRS" },
+      "kind": "StorageV2",
+      "properties": {
+        "isHnsEnabled": true
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2023-01-01",
+      "name": "[concat(parameters('storageAccountSynapseName'), '/default/synapse')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountSynapseName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces",
+      "apiVersion": "2021-06-01",
+      "name": "[parameters('synapseWorkspaceName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('storageAccountSynapseName'), 'default', 'synapse')]"
+      ],
+      "identity": { "type": "SystemAssigned" },
+      "properties": {
+        "defaultDataLakeStorage": {
+          "accountUrl": "[concat('https://', parameters('storageAccountSynapseName'), '.dfs.core.windows.net')]",
+          "filesystem": "synapse"
+        },
+        "sqlAdministratorLogin": "[parameters('sqlAdminLogin')]",
+        "sqlAdministratorLoginPassword": "[parameters('sqlAdminPassword')]",
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/sqlPools",
+      "apiVersion": "2021-06-01",
+      "name": "[concat(parameters('synapseWorkspaceName'), '/AdventurePool')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+      ],
+      "sku": { "name": "DW100c" },
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS"
+      }
+    }
+  ]
+}
