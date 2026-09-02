@@ -18,28 +18,34 @@ CONTAINER_BACPAC="bacpac-store"
 BACPAC_PATH="./data/AdventureWorksLT.bacpac"
 
 echo "=========================================="
-echo "🚀 INICIANDO DESPLIEGUE EN AZURE"
+echo "🚀 INICIANDO DESPLIEGUE COMPLETO EN AZURE"
 echo "Grupo de recursos: $RESOURCE_GROUP"
 echo "Región: $LOCATION"
 echo "=========================================="
 
+# Validar que el archivo BACPAC exista y supere los 100 KB
+if [ ! -f "$BACPAC_PATH" ] || [ $(stat -c%s "$BACPAC_PATH") -lt 100000 ]; then
+    echo "❌ Error: ./data/AdventureWorksLT.bacpac no existe o pesa menos de 100KB."
+    echo "Ejecuta primero: ./data/download_sample_data.sh"
+    exit 1
+fi
+
 # 1. Crear Resource Group
 echo "📦 1. Creando Resource Group..."
-az group create --name "$RESOURCE_GROUP" --location "$LOCATION" -o table
+az group create --name "$RESOURCE_GROUP" --location "$LOCATION" --output table
 
-# 2. Crear Storage Account de Staging para el BACPAC
+# 2. Crear Storage Account y subir BACPAC
 echo "🪣 2. Creando Storage Account: $ST_BACPAC_NAME..."
 az storage account create \
   --name "$ST_BACPAC_NAME" \
   --resource-group "$RESOURCE_GROUP" \
   --location "$LOCATION" \
   --sku Standard_LRS \
-  -o table
+  -o none
 
-echo "🔑 Obteniendo credenciales de acceso..."
 ST_KEY=$(az storage account keys list --resource-group "$RESOURCE_GROUP" --account-name "$ST_BACPAC_NAME" --query "[0].value" -o tsv)
 
-echo "📤 Subiendo $BACPAC_PATH a Azure Blob Storage..."
+echo "📤 Subiendo $BACPAC_PATH a Blob Storage..."
 az storage container create --name "$CONTAINER_BACPAC" --account-name "$ST_BACPAC_NAME" --account-key "$ST_KEY" -o none
 az storage blob upload \
   --account-name "$ST_BACPAC_NAME" \
@@ -48,10 +54,10 @@ az storage blob upload \
   --name "AdventureWorksLT.bacpac" \
   --file "$BACPAC_PATH" \
   --overwrite \
-  -o table
+  --output table
 
 # 3. Desplegar Infraestructura con ARM Template
-echo "⚙️ 3. Ejecutando despliegue de ARM Template..."
+echo "⚙️ 3. Desplegando ARM Template (SQL, Synapse y restauración de BD)..."
 az deployment group create \
   --resource-group "$RESOURCE_GROUP" \
   --template-file "./iac/template.json" \
@@ -65,20 +71,27 @@ az deployment group create \
       bacpacStorageAccountName="$ST_BACPAC_NAME" \
       bacpacContainerName="$CONTAINER_BACPAC" \
       bacpacFileName="AdventureWorksLT.bacpac" \
-  -o table
+  --output table
 
-# 4. Habilitar IP pública local en el Firewall de SQL Server
+# Obtener Subscription ID activo
+SUB_ID=$(az account show --query id -o tsv)
+
+# 4. Habilitar IP local en Firewall (vía API REST con api-version estable)
 MY_IP=$(curl -s https://api.ipify.org)
-echo "🛡️ 4. Agregando tu IP ($MY_IP) al Firewall de Azure SQL..."
-az sql server firewall-rule create \
-  --resource-group "$RESOURCE_GROUP" \
-  --server "$SQL_SERVER_NAME" \
-  --name "ClientIPRule" \
-  --start-ip-address "$MY_IP" \
-  --end-ip-address "$MY_IP" \
+echo "🛡️ 4. Agregando IP local ($MY_IP) al Firewall de Azure SQL..."
+az rest --method put \
+  --url "https://management.azure.com/subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Sql/servers/${SQL_SERVER_NAME}/firewallRules/ClientIPRule?api-version=2021-11-01-preview" \
+  --body "{\"properties\":{\"startIpAddress\":\"${MY_IP}\",\"endIpAddress\":\"${MY_IP}\"}}" \
   -o none
 
-# Guardar credenciales generadas en archivo local ignorado
+# 5. Pausar Synapse Dedicated SQL Pool (vía API REST para evitar cobros)
+echo "⏸️ 5. Pausando el SQL Pool de Synapse..."
+az rest --method post \
+  --url "https://management.azure.com/subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Synapse/workspaces/${SYNAPSE_WS_NAME}/sqlPools/AdventurePool/pause?api-version=2021-06-01-preview" \
+  -o none
+
+# 6. Guardar credenciales de conexión locales
+echo "💾 6. Generando archivo de parámetros locales..."
 cat << EOF > ./iac/parameters.local.json
 {
   "resourceGroup": "$RESOURCE_GROUP",
@@ -92,8 +105,9 @@ cat << EOF > ./iac/parameters.local.json
 EOF
 
 echo "=========================================="
-echo "✅ DESPLIEGUE COMPLETADO CON ÉXITO"
+echo "✅ DESPLIEGUE COMPLETADO Y VALIDADO"
 echo "Servidor SQL: ${SQL_SERVER_NAME}.database.windows.net"
 echo "Base de Datos: AdventureWorksLT"
-echo "Credenciales guardadas en: ./iac/parameters.local.json"
+echo "Pool de Synapse: Pausado"
+echo "Credenciales: ./iac/parameters.local.json"
 echo "=========================================="

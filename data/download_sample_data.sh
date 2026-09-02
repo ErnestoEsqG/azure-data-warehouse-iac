@@ -4,9 +4,9 @@ set -e
 DATA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DATA_DIR"
 
-echo "📥 Descargando AdventureWorksLT BACPAC oficial de Microsoft..."
-curl -L -o AdventureWorksLT.bacpac \
-  "https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorksLT2022.bacpac"
+echo "📥 Descargando AdventureWorksLT.bacpac oficial desde Microsoft Learning..."
+curl -fSL -o AdventureWorksLT.bacpac \
+  "https://raw.githubusercontent.com/MicrosoftLearning/dp-300-database-administrator/master/Instructions/Templates/AdventureWorksLT.bacpac"
 
 echo "📄 Generando dataset incremental (ventas_nuevas.csv)..."
 cat << 'EOF' > ventas_nuevas.csv
@@ -18,4 +18,5 @@ SalesOrderID,OrderDate,CustomerID,SubTotal,TaxAmt,Freight,TotalDue,Status
 71951,2026-08-05,29504,2150.00,172.00,53.75,2375.75,5
 EOF
 
-echo "✅ Descarga y archivos de prueba completados exitosamente."
+echo "✅ Descarga completada. Tamaño del binario:"
+ls -lh AdventureWorksLT.bacpac
