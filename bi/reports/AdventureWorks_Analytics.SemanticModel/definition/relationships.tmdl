@@ -1,0 +1,17 @@
+relationship f924a49c-8dee-4d3d-ad91-235514a6db2e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'dw FactSales'.OrderDate
+	toColumn: LocalDateTable_a9e083f3-ba21-4182-90b4-96e1671b5582.Date
+
+relationship AutoDetected_0cc9e683-0821-4b27-9f97-1125384fc0f1
+	fromColumn: 'dw FactSales'.ProductID
+	toColumn: 'dw DimProduct'.ProductID
+
+relationship e4eaef99-1118-a95a-e57d-78e5a8496a41
+	fromColumn: 'dw FactSales'.OrderDateKey
+	toColumn: 'dw DimDate'.DateKey
+
+relationship aeac3189-ca36-fd05-a758-875058c045c7
+	fromColumn: 'dw FactSales'.CustomerID
+	toColumn: 'dw DimCustomer'.CustomerID
+

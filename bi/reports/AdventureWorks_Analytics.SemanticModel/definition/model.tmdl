@@ -1,0 +1,25 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-MX
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["dw DimCustomer","dw DimDate","dw DimProduct","dw FactSales","_Measures"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table 'dw DimCustomer'
+ref table 'dw DimDate'
+ref table DateTableTemplate_fcac14a3-a1a7-4b4e-b60b-213b374748be
+ref table 'dw DimProduct'
+ref table 'dw FactSales'
+ref table LocalDateTable_a9e083f3-ba21-4182-90b4-96e1671b5582
+ref table _Measures
+
+ref cultureInfo es-ES
+

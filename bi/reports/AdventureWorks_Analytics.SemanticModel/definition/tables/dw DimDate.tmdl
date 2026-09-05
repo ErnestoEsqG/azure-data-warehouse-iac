@@ -1,0 +1,113 @@
+table 'dw DimDate'
+	lineageTag: d725368f-15ac-490b-9dd9-791f2d4c24c1
+	dataCategory: Time
+
+	column DateKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 3176bf55-29c9-4815-88ce-103e55adf327
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: f557ef3f-c7e6-4b71-af51-35adfb7a9b1e
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: f5ab9979-8a2a-4afe-9239-0e079cda22d4
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column QuarterNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: 145483a2-d12c-4ee8-b346-19a9e5ec0c57
+		summarizeBy: sum
+		sourceColumn: QuarterNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column QuarterName
+		dataType: string
+		lineageTag: 07b901da-9f98-4321-aa2b-6cdceda9f634
+		summarizeBy: none
+		sourceColumn: QuarterName
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: 0561d1d0-ee56-4dd2-8087-5351ded46683
+		summarizeBy: sum
+		sourceColumn: MonthNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthName
+		dataType: string
+		lineageTag: b3d099f5-d3db-442d-ba21-d8e370ac33e3
+		summarizeBy: none
+		sourceColumn: MonthName
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthYear
+		dataType: string
+		lineageTag: 32788c37-47a3-484a-9234-bd4549e7accc
+		summarizeBy: none
+		sourceColumn: MonthYear
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfMonth
+		dataType: int64
+		formatString: 0
+		lineageTag: 906e2d34-0256-4eae-8aaa-4be3cea6de61
+		summarizeBy: sum
+		sourceColumn: DayOfMonth
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfWeekNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: 1e877579-e198-45c1-9382-db874cfc08d9
+		summarizeBy: sum
+		sourceColumn: DayOfWeekNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfWeekName
+		dataType: string
+		lineageTag: dbecf1fd-24aa-4089-a91a-4a501ef308d9
+		summarizeBy: none
+		sourceColumn: DayOfWeekName
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'dw DimDate' = m
+		mode: import
+		source =
+				let
+				  Source = Sql.Database("sql-adv-9335.database.windows.net", "AdventureWorksLT", [EnableCrossDatabaseFolding = true]),
+				  #"Navigation 1" = Source{[Schema = "dw", Item = "DimDate"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,167 @@
+table 'dw FactSales'
+	lineageTag: f09362da-de06-449d-9f34-26eec366a03e
+
+	column SalesOrderDetailID
+		dataType: int64
+		formatString: 0
+		lineageTag: 3e00f9eb-de50-486e-bd12-03cb2ad426c8
+		summarizeBy: count
+		sourceColumn: SalesOrderDetailID
+
+		annotation SummarizationSetBy = Automatic
+
+	column SalesOrderID
+		dataType: int64
+		formatString: 0
+		lineageTag: a156fe08-e250-463c-9c9d-044ee43d7a73
+		summarizeBy: count
+		sourceColumn: SalesOrderID
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderDateKey
+		dataType: int64
+		formatString: 0
+		lineageTag: fee2ec80-e38e-4dc9-a2e1-77ec6f159809
+		summarizeBy: none
+		sourceColumn: OrderDateKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderDate
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ba5d4ed4-cc25-499e-ac18-952dfda9d3e1
+		summarizeBy: none
+		sourceColumn: OrderDate
+
+		variation Variation
+			isDefault
+			relationship: f924a49c-8dee-4d3d-ad91-235514a6db2e
+			defaultHierarchy: LocalDateTable_a9e083f3-ba21-4182-90b4-96e1671b5582.'Jerarquía de fechas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustomerID
+		dataType: int64
+		formatString: 0
+		lineageTag: 83840bf7-73ac-4758-815d-3dfaed36693d
+		summarizeBy: none
+		sourceColumn: CustomerID
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductID
+		dataType: int64
+		formatString: 0
+		lineageTag: 1710bfbf-e1a8-4719-b0b3-b181e5e3e780
+		summarizeBy: none
+		sourceColumn: ProductID
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderQty
+		dataType: int64
+		formatString: 0
+		lineageTag: fd567177-7b45-4e7e-8b24-aabe025a6ea3
+		summarizeBy: sum
+		sourceColumn: OrderQty
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitPrice
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: 48a47dab-e2d3-49e5-8ea8-d138609efea8
+		summarizeBy: sum
+		sourceColumn: UnitPrice
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column UnitPriceDiscount
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: 5d067079-b86f-4f81-8108-534b121c4028
+		summarizeBy: sum
+		sourceColumn: UnitPriceDiscount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column LineTotal
+		dataType: double
+		lineageTag: d524d09d-9e82-4c54-8ffc-c99bee0d49a7
+		summarizeBy: sum
+		sourceColumn: LineTotal
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column OrderStatus
+		dataType: int64
+		formatString: 0
+		lineageTag: 6e137398-0e47-477d-a6d2-74a3f78635a3
+		summarizeBy: sum
+		sourceColumn: OrderStatus
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderSubTotal
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: 0570b42d-ed11-4c99-82d9-e2572fe5dbe2
+		summarizeBy: sum
+		sourceColumn: OrderSubTotal
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column OrderTaxAmt
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: 14288456-af71-4264-b699-9206c6eb9bc5
+		summarizeBy: sum
+		sourceColumn: OrderTaxAmt
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column OrderFreight
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: d3f3dc10-e933-4112-a77f-85ee1fc98660
+		summarizeBy: sum
+		sourceColumn: OrderFreight
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column OrderTotalDue
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: eedccb90-361a-4412-b65a-ba8478c12d86
+		summarizeBy: sum
+		sourceColumn: OrderTotalDue
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	partition 'dw FactSales' = m
+		mode: import
+		source =
+				let
+				  Source = Sql.Database("sql-adv-9335.database.windows.net", "AdventureWorksLT", [EnableCrossDatabaseFolding = true]),
+				  #"Navigation 1" = Source{[Schema = "dw", Item = "FactSales"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,103 @@
+table 'dw DimProduct'
+	lineageTag: b7e82b99-5a2f-4cd4-b7ba-d17de863b841
+
+	column ProductID
+		dataType: int64
+		formatString: 0
+		lineageTag: f305783f-a932-4b8d-a610-317ef5d69bb5
+		summarizeBy: none
+		sourceColumn: ProductID
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductName
+		dataType: string
+		lineageTag: ee31ec93-d1e5-4f21-b69b-96f43a1d6340
+		summarizeBy: none
+		sourceColumn: ProductName
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductNumber
+		dataType: string
+		lineageTag: d4bcc4c7-5b0a-4e16-afc6-23211d1be583
+		summarizeBy: none
+		sourceColumn: ProductNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column Color
+		dataType: string
+		lineageTag: 5b70f6cc-71a4-422b-9190-a6e8196e9eb1
+		summarizeBy: none
+		sourceColumn: Color
+
+		annotation SummarizationSetBy = Automatic
+
+	column StandardCost
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: e9c9a29b-ed0d-4ba3-9686-89d8422b11a0
+		summarizeBy: none
+		sourceColumn: StandardCost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column ListPrice
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: da5aacf5-8962-4adf-b848-1747d4e09b06
+		summarizeBy: none
+		sourceColumn: ListPrice
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column Size
+		dataType: string
+		lineageTag: 8d0f5307-9a6c-4148-8681-fdc10dea8cb6
+		summarizeBy: none
+		sourceColumn: Size
+
+		annotation SummarizationSetBy = Automatic
+
+	column Weight
+		dataType: double
+		lineageTag: 31718e76-4490-40fc-9786-e9c334af2a4f
+		summarizeBy: none
+		sourceColumn: Weight
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ProductCategory
+		dataType: string
+		lineageTag: 89518796-13f0-481a-93aa-100e872461b7
+		summarizeBy: none
+		sourceColumn: ProductCategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductModel
+		dataType: string
+		lineageTag: 6b8f249f-69bf-4366-b0a9-a2f4b80f37f4
+		summarizeBy: none
+		sourceColumn: ProductModel
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'dw DimProduct' = m
+		mode: import
+		source =
+				let
+				  Source = Sql.Database("sql-adv-9335.database.windows.net", "AdventureWorksLT", [EnableCrossDatabaseFolding = true]),
+				  #"Navigation 1" = Source{[Schema = "dw", Item = "DimProduct"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+
