@@ -43,17 +43,26 @@ The Power BI executive dashboard surfaces profitability anomalies, product categ
 ## 📂 Repository Layout
 
 ```text
-├── iac/
-│   ├── azuredeploy.json         # ARM template for SQL & Storage
-│   └── deploy.sh / destroy.sh   # Automated provisioning scripts
-├── sql/
-│   ├── staging/                 # Bulk load and operational ETL scripts
-│   └── dw/
-│       └── 01_create_star_schema.sql # Dimensional model views & DimDate table
-├── bi
+├── bi/
 │   └── reports/
-|       └── AdventureWorks_Analytics.pbip # Power BI Project files (JSON/TMDL format)
+│       ├── AdventureWorks_Analytics.Report/       # Visual layout and report pages
+│       ├── AdventureWorks_Analytics.SemanticModel/ # DAX measures, tables & model definitions
+│       └── AdventureWorks_Analytics.pbip          # Power BI Project root file
+├── data/
+│   ├── AdventureWorksLT.bacpac                    # Base transactional database backup
+│   ├── download_sample_data.sh                    # Extraction script for raw data
+│   └── ventas_nuevas.csv                          # Incremental landing dataset
 ├── docs/
-│   └── architecture_diagram.png # Architecture and data flow diagram
+│   ├── bi_dashboard_preview.png                   # Executive dashboard screenshot
+│   └── star_schema_model.png                      # Power BI dimensional model diagram
+├── iac/
+│   ├── deploy.sh                                  # Automated provisioning & orchestration
+│   ├── destroy.sh                                 # Teardown script for Azure resources
+│   ├── parameters.example.json                    # Template parameter definitions
+│   ├── parameters.local.json                      # Local dynamic credentials (git-ignored)
+│   └── template.json                              # ARM template for SQL & Storage
+├── sql/
+│   └── dw/
+│       └── 01_create_star_schema.sql              # Views (Dimensions/Facts) & DimDate table
+├── .gitignore                                     # Ignores sensitive local credentials
 └── README.md
-
