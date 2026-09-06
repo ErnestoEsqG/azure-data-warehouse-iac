@@ -1,10 +1,16 @@
--- 1. Esquema analítico desacoplado
+-- =============================================================================
+-- Script: 01_create_star_schema.sql
+-- Description: Analytical dimensional model (dw schema) for AdventureWorksLT.
+-- =============================================================================
+
+-- 1. Decoupled analytical schema
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'dw')
 BEGIN
     EXEC('CREATE SCHEMA dw');
 END;
+GO
 
--- 2. Dimensión Cliente
+-- 2. Customer Dimension
 CREATE OR ALTER VIEW dw.DimCustomer AS
 SELECT 
     c.CustomerID,
@@ -13,8 +19,9 @@ SELECT
     c.EmailAddress,
     c.Phone
 FROM SalesLT.Customer c;
+GO
 
--- 3. Dimensión Producto (desnormalizada con categoría y modelo)
+-- 3. Product Dimension (denormalized with category and model)
 CREATE OR ALTER VIEW dw.DimProduct AS
 SELECT 
     p.ProductID,
@@ -32,9 +39,11 @@ LEFT JOIN SalesLT.ProductCategory pc
     ON p.ProductCategoryID = pc.ProductCategoryID
 LEFT JOIN SalesLT.ProductModel pm 
     ON p.ProductModelID = pm.ProductModelID;
+GO
 
--- 4. Dimensión Calendario (Tabla física para Time Intelligence)
+-- 4. Calendar Dimension (Physical table for Time Intelligence)
 DROP TABLE IF EXISTS dw.DimDate;
+GO
 
 CREATE TABLE dw.DimDate (
     DateKey INT PRIMARY KEY,
@@ -49,10 +58,11 @@ CREATE TABLE dw.DimDate (
     DayOfWeekNumber INT NOT NULL,
     DayOfWeekName VARCHAR(20) NOT NULL
 );
+GO
 
--- Generación e inserción de fechas (2020 a 2030)
+-- Date generation and insertion (2005 to 2030 to cover historical orders)
 WITH DateRange AS (
-    SELECT CAST('2020-01-01' AS DATE) AS [Date]
+    SELECT CAST('2005-01-01' AS DATE) AS [Date]
     UNION ALL
     SELECT DATEADD(day, 1, [Date])
     FROM DateRange
@@ -73,8 +83,9 @@ SELECT
     DATENAME(weekday, [Date]) AS DayOfWeekName
 FROM DateRange
 OPTION (MAXRECURSION 0);
+GO
 
--- 5. Tabla de Hechos: Ventas
+-- 5. Fact Table: Sales
 CREATE OR ALTER VIEW dw.FactSales AS
 SELECT 
     d.SalesOrderDetailID,
@@ -95,3 +106,4 @@ SELECT
 FROM SalesLT.SalesOrderHeader h
 INNER JOIN SalesLT.SalesOrderDetail d 
     ON h.SalesOrderID = d.SalesOrderID;
+GO
