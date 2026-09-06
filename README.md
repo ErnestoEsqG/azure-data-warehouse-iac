@@ -15,7 +15,19 @@ The pipeline processes transactional retail data (`AdventureWorksLT`) through fi
    - `dw.FactSales`: Transactional line-item metrics.
    - `dw.DimCustomer`, `dw.DimProduct`: Conformed dimension views abstracting OLTP normalization.
    - `dw.DimDate`: Programmatically generated calendar dimension (2005–2030) supporting Time Intelligence DAX.
+
+### Dimensional Data Model (Star Schema)
+The analytical layer implements a Kimball-style Star Schema with single-direction 1:* relationships and an isolated `_Measures` table:
+
+![Star Schema Data Model](docs/star_schema_model.png)
+
 5. **Business Intelligence Layer:** Executive semantic model and dashboard built in Power BI Desktop, version-controlled using Git-friendly `.pbip` metadata format.
+
+## 📊 Business Intelligence & Reporting
+The Power BI executive dashboard surfaces profitability anomalies, product category distribution, and top client contribution:
+
+![Executive Dashboard Preview](docs/bi_dashboard_preview.png)
+
 
 ---
 
@@ -38,8 +50,9 @@ The pipeline processes transactional retail data (`AdventureWorksLT`) through fi
 │   ├── staging/                 # Bulk load and operational ETL scripts
 │   └── dw/
 │       └── 01_create_star_schema.sql # Dimensional model views & DimDate table
-├── reports/
-│   └── AdventureWorks_Analytics.pbip # Power BI Project files (JSON/TMDL format)
+├── bi
+│   └── reports/
+|       └── AdventureWorks_Analytics.pbip # Power BI Project files (JSON/TMDL format)
 ├── docs/
 │   └── architecture_diagram.png # Architecture and data flow diagram
 └── README.md
